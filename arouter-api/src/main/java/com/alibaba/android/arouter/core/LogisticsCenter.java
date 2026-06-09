@@ -2,6 +2,7 @@ package com.alibaba.android.arouter.core;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
 import com.alibaba.android.arouter.exception.HandlerException;
 import com.alibaba.android.arouter.exception.NoRouteFoundException;
@@ -51,6 +52,7 @@ import static com.alibaba.android.arouter.utils.Consts.TAG;
  * @since 16/8/23 15:02
  */
 public class LogisticsCenter {
+    private static String TAG = "LogisticsCenter";
     private static Context mContext;
     static ThreadPoolExecutor executor;
     private static boolean registerByPlugin;
@@ -73,6 +75,7 @@ public class LogisticsCenter {
      * the problem that the main dex file size is too large
      */
     private static void register(String className) {
+        Log.d(TAG, "register:className=" + className);
         if (!TextUtils.isEmpty(className)) {
             try {
                 Class<?> clazz = Class.forName(className);
@@ -88,13 +91,14 @@ public class LogisticsCenter {
                             + " should implements one of IRouteRoot/IProviderGroup/IInterceptorGroup.");
                 }
             } catch (Exception e) {
-                logger.error(TAG,"register class error:" + className, e);
+                logger.error(TAG, "register class error:" + className, e);
             }
         }
     }
 
     /**
      * method for arouter-auto-register plugin to register Routers
+     *
      * @param routeRoot IRouteRoot implementation class in the package: com.alibaba.android.arouter.core.routers
      */
     private static void registerRouteRoot(IRouteRoot routeRoot) {
@@ -106,6 +110,7 @@ public class LogisticsCenter {
 
     /**
      * method for arouter-auto-register plugin to register Interceptors
+     *
      * @param interceptorGroup IInterceptorGroup implementation class in the package: com.alibaba.android.arouter.core.routers
      */
     private static void registerInterceptor(IInterceptorGroup interceptorGroup) {
@@ -117,6 +122,7 @@ public class LogisticsCenter {
 
     /**
      * method for arouter-auto-register plugin to register Providers
+     *
      * @param providerGroup IProviderGroup implementation class in the package: com.alibaba.android.arouter.core.routers
      */
     private static void registerProvider(IProviderGroup providerGroup) {
@@ -356,7 +362,7 @@ public class LogisticsCenter {
     }
 
     public synchronized static void addRouteGroupDynamic(String groupName, IRouteGroup group) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        if (Warehouse.groupsIndex.containsKey(groupName)){
+        if (Warehouse.groupsIndex.containsKey(groupName)) {
             // If this group is included, but it has not been loaded
             // load this group first, because dynamic route has high priority.
             Warehouse.groupsIndex.get(groupName).getConstructor().newInstance().loadInto(Warehouse.routes);

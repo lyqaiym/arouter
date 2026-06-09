@@ -38,11 +38,10 @@ public class PluginLaunch : Plugin<Project> {
             list.add(ScanSetting("IRouteGroup"))
             RegisterTransform.registerList = list
             var androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
-            RegisterTransform.androidComponents = androidComponents
             androidComponents.onVariants { variant ->
                 System.out.println("arouter-register execute:name1=" + variant.name)
                 val taskProvider = project.tasks.register(
-                    "${variant.name}ARouterTask", RegisterTransform::class.java)
+                    "${variant.name}ARouterTask", RegisterTransform::class.java, androidComponents)
                 System.out.println("arouter-register execute:name2=" + variant.name)
                 variant.artifacts.forScope(ScopedArtifacts.Scope.ALL).use(taskProvider)
                     .toTransform(

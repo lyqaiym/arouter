@@ -30,7 +30,7 @@ object ScanUtil {
                 while (enumeration.hasMoreElements()) {
                     val jarEntry = enumeration.nextElement() as JarEntry
                     val entryName = jarEntry.name
-                    System.err.println("scanJar:entryName=$entryName,jarFile=$jarFile")
+//                    System.err.println("scanJar:entryName=$entryName,jarFile=$jarFile")
                     if (entryName.startsWith(ScanSetting.ROUTER_CLASS_PACKAGE_NAME)) {
                         file.getInputStream(jarEntry).use { inputStream ->
                             System.err.println("scanJar:avable=${inputStream.available()}")
@@ -39,7 +39,7 @@ object ScanUtil {
                             }
                         }
                     } else if (ScanSetting.GENERATE_TO_CLASS_FILE_NAME == entryName) {
-                        System.err.println("scanJar:LogisticsCenter")
+                        System.out.println("scanJar:LogisticsCenter,jarFile=$jarFile")
                         // mark this jar file contains LogisticsCenter.class
                         // After the scan is complete, we will generate register code into this file
                         RegisterTransform.fileContainsInitClass = jarFile

@@ -34,7 +34,7 @@ android {
 dependencies {
 //    annotationProcessor 'com.alibaba:arouter-compiler:1.5.2'
     annotationProcessor project(':arouter-compiler')
-    api project(':arouter-annotation')=
+    api project(':arouter-annotation')
 //    api 'com.alibaba:arouter-annotation:1.0.6'
     implementation "androidx.core:core:1.3.1@aar"
     implementation "androidx.lifecycle:lifecycle-common:2.4.0"

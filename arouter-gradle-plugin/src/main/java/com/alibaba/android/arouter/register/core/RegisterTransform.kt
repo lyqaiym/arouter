@@ -33,7 +33,9 @@ import kotlin.collections.iterator
 // * @author billy.qi email: qiyilike@163.com
 // * @since 17/3/21 11:48
 // */
-abstract class RegisterTransform : DefaultTask() {
+abstract class RegisterTransform @Inject constructor(
+    private val androidComponents: AndroidComponentsExtension<*, *, *>
+) : DefaultTask() {
     //
 //    Project project
 //    static File fileContainsInitClass;
@@ -52,7 +54,6 @@ abstract class RegisterTransform : DefaultTask() {
 
     companion object {
         var registerList: ArrayList<ScanSetting> = ArrayList()
-        lateinit var androidComponents: AndroidComponentsExtension<*, *, *>
         var fileContainsInitClass: File? = null
     }
 
@@ -112,7 +113,8 @@ abstract class RegisterTransform : DefaultTask() {
     }
 
     private fun packOutputJar() {
-        val jarOutput = JarOutputStream(BufferedOutputStream(FileOutputStream(output.get().asFile)))
+        val outputFile = output.get().asFile
+        val jarOutput = JarOutputStream(BufferedOutputStream(FileOutputStream(outputFile)))
         val insertTag = mutableSetOf<String>()
         inputFiles.forEach { input ->
             if (input.isFile && input.name.lowercase().endsWith(".jar")) {
@@ -140,7 +142,6 @@ abstract class RegisterTransform : DefaultTask() {
                     file.inputStream().use { inputStream ->
                         inputStream.copyTo(jarOutput)
                     }
-                    System.out.println("RegisterTransform:packOutput:file=" + file)
                     if (file.isFile() && ScanUtil.shouldProcessClass(path)) {
                         ScanUtil.scanClass(pool, file)
                     }
@@ -149,14 +150,103 @@ abstract class RegisterTransform : DefaultTask() {
             }
         }
         jarOutput.close()
-        registerList.forEach { ext ->
-            if (ext.interfaceName.isNotEmpty()) {
-                val classname = ext.interfaceName.replace("/", ".")
-                System.err.println("packOutputJar:interfaceName=${classname},size=${ext.classList.size}")
-                for (classNameFind in ext.classList) {
-                    System.err.println("packOutputJar:classNameF=${classNameFind}")
+        if (fileContainsInitClass != null) {
+            fileContainsInitClass = outputFile // 👈 就加这一行！！！
+            registerList.forEach { ext ->
+                if (ext.interfaceName.isNotEmpty()) {
+                    val classname = ext.interfaceName.replace("/", ".")
+                    System.err.println("packOutputJar:interfaceName=${classname},size=${ext.classList.size}")
+                    for (classNameFind in ext.classList) {
+                        System.err.println("packOutputJar:classNameF=${classNameFind}")
+                    }
+                    RegisterCodeGenerator.insertInitCodeTo(ext)
                 }
             }
         }
     }
+
+//    private fun packOutputJar2() {
+//        // 🔥 正确顺序：
+//// 1. 先扫描所有 jar/class（收集需要注册的类）
+//// 2. 再打包输出 Jar
+//// 3. 最后对目标 Jar 插入初始化代码
+//        val outputFile = output.get().asFile
+//        val jarOutput = JarOutputStream(BufferedOutputStream(FileOutputStream(outputFile)))
+//        val insertTag = mutableSetOf<String>()
+//
+//// 第一步：先遍历所有输入文件，【只扫描，不写入】
+//        inputFiles.forEach { input ->
+//            if (input.isFile && input.name.endsWith(".jar", true)) {
+//                val jarFile = JarFile(input)
+//                for (jarEntry in jarFile.entries()) {
+//                    if (!insertTag.contains(jarEntry.name)) {
+//                        if (ScanUtil.shouldProcessPreDexJar(input.path)) {
+//                            // 🔥 先扫描收集类，不写文件
+//                            ScanUtil.scanJar(pool, input)
+//                        }
+//                    }
+//                }
+//                jarFile.close()
+//            } else {
+//                input.walk().filter { it.isFile }.forEach { file ->
+//                    if (file.name.endsWith(".class") && ScanUtil.shouldProcessClass(file.path)) {
+//                        // 🔥 先扫描收集类
+//                        ScanUtil.scanClass(pool, file)
+//                    }
+//                }
+//            }
+//        }
+//
+//// 第二步：扫描完成 → 开始【写入输出 Jar】
+//        inputFiles.forEach { input ->
+//            if (input.isFile && input.name.endsWith(".jar", true)) {
+//                val jarFile = JarFile(input)
+//                for (jarEntry in jarFile.entries()) {
+//                    if (!insertTag.contains(jarEntry.name)) {
+//                        insertTag.add(jarEntry.name)
+//                        jarOutput.putNextEntry(JarEntry(jarEntry.name))
+//
+//                        // 拷贝文件
+//                        jarFile.getInputStream(jarEntry).use {
+//                            it.copyTo(jarOutput)
+//                        }
+//
+//                        jarOutput.closeEntry()
+//                    }
+//                }
+//                jarFile.close()
+//            } else {
+//                // 处理目录
+//                input.walk().filter { it.isFile }.forEach { file ->
+//                    val relativePath = input.toURI().relativize(file.toURI()).path
+//                    val entryPath = relativePath.replace(File.separatorChar, '/')
+//
+//                    if (!insertTag.contains(entryPath)) {
+//                        insertTag.add(entryPath)
+//                        jarOutput.putNextEntry(JarEntry(entryPath))
+//                        file.inputStream().use { it.copyTo(jarOutput) }
+//                        jarOutput.closeEntry()
+//                    }
+//                }
+//            }
+//        }
+//
+//// 第三步：必须【关闭输出流】之后，再修改 Jar！！！
+//        jarOutput.flush()
+//        jarOutput.close()
+//
+//        // 🔥🔥🔥 终极修复：注入到【最终输出的 Jar】，而不是原来的 arouter-api jar！
+//        fileContainsInitClass = outputFile // 👈 就加这一行！！！
+//// 🔥 关键：流关闭后，再执行代码注入！！！
+//        if (fileContainsInitClass != null && fileContainsInitClass?.exists() == true) {
+//            registerList.forEach { ext ->
+//                if (ext.interfaceName.isNotEmpty() && ext.classList.isNotEmpty()) {
+//                    println("🔥 开始注入代码：${ext.interfaceName}，类数量：${ext.classList.size}")
+//                    RegisterCodeGenerator.insertInitCodeTo(ext)
+//                }
+//            }
+//        }
+//
+//        println("✅ 输出 Jar 完成：${outputFile.absolutePath}")
+//    }
 }
