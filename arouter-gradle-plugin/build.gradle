@@ -1,0 +1,23 @@
+apply plugin: 'groovy'
+apply plugin: "kotlin"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+}
+
+dependencies {
+//    compile 'com.android.tools.build:gradle:2.1.3'
+    implementation "com.android.tools.build:gradle:$agp_version"
+    implementation 'org.javassist:javassist:3.28.0-GA'
+    implementation 'commons-codec:commons-codec:1.11'
+    implementation 'commons-io:commons-io:2.4'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
+}
+
+apply from: rootProject.file('gradle/publish.gradle')

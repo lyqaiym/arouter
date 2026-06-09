@@ -1,0 +1,139 @@
+apply plugin: 'maven-publish'
+task sourceJar(type: Jar) {
+    archiveClassifier.set('sources')
+    if (project.plugins.hasPlugin('com.android.library')) {
+        from android.sourceSets.main.java.srcDirs
+    } else if (project.plugins.hasPlugin('java')) {
+        from sourceSets.main.allSource
+    }
+}
+
+def isReleaseBuild() {
+    return VERSION_NAME.contains("SNAPSHOT") == false
+}
+
+afterEvaluate { project ->
+    // To avoid uploading the default empty jar artifact in the project root directory, we use a custom
+    // configuration to specify which artifacts we want to upload.
+    publishing {
+        publications {
+            def isPulish = System.getenv("mode") == "0"
+            if (System.getenv('isJenkins') == 'true') {
+                logger.error("mavenJava:jenkins")
+//                pom.groupId = System.getenv('PACKAGE_NAME')
+                def LmoduleName=System.getenv('moduleName')
+                if (LmoduleName ==null){
+                    LmoduleName=System.getenv('JOB_BASE_NAME')
+                }
+                String gitBranch = System.getenv('mbranch')
+                if (gitBranch != null && gitBranch.length() > 0) {
+                    int indexOf = gitBranch.lastIndexOf('/')
+                    int length = gitBranch.length()
+                    if (indexOf > 0 && indexOf < length) {
+                        gitBranch = gitBranch.substring(indexOf + 1);
+                    }
+                }
+                String isUserBuildVerstionStr = System.getenv('isUserBuildVersion')
+                boolean isUserBuildVerstion = (isUserBuildVerstionStr == 'true')
+                logger.error("是否使用手动传入的分支名 :" + (isUserBuildVerstionStr ? '是' : "否"))
+                String buildVersion = ""
+
+                if (!isPulish) {
+                    if (isUserBuildVerstion) {
+                        buildVersion = System.getenv('BUILD_VERSION') + "-SNAPSHOT"
+                    } else {
+                        buildVersion = gitBranch + "-SNAPSHOT"
+                    }
+
+
+                } else {
+                    if (isUserBuildVerstion) {
+                        buildVersion = System.getenv('BUILD_VERSION')
+                    } else {
+                        buildVersion = gitBranch
+                    }
+
+                }
+
+                logger.error("********************************************构建的aar版本名为： :" + buildVersion + "********************************************")
+//                pom.version = buildVersion
+                mavenJava(MavenPublication) {
+                    if (project.plugins.hasPlugin('com.android.library')) {
+                        // Check if release component exists, otherwise use debug
+                        if (components.findByName("release")) {
+                            from components["release"]
+                        } else if (components.findByName("debug")) {
+                            from components["debug"]
+                        } else {
+                            // Fallback for AGP 8.0+ - try to get any available component
+                            def availableComponents = components.names
+                            if (availableComponents.size() > 0) {
+                                from components[availableComponents.first()]
+                            } else {
+                                // If no components available, skip this publication
+                                logger.warn("No software components found for publication")
+                            }
+                        }
+                    } else if (project.plugins.hasPlugin('java')) {
+                        from components["java"]
+                    }
+                    groupId = System.getenv('PACKAGE_NAME')
+                    artifactId = LmoduleName
+                    version = buildVersion
+                    artifact sourceJar
+                }
+            } else {
+                logger.error("mavenJava:local:POM_ARTIFACT_ID="+POM_ARTIFACT_ID)
+                logger.error("mavenJava:local:GROUPID="+GROUPID)
+                logger.error("mavenJava:local:version="+VERSION_NAME)
+                mavenJava(MavenPublication) {
+                    if (project.plugins.hasPlugin('com.android.library')) {
+                        // Check if release component exists, otherwise use debug
+                        if (components.findByName("release")) {
+                            from components["release"]
+                        } else if (components.findByName("debug")) {
+                            from components["debug"]
+                        } else {
+                            // Fallback for AGP 8.0+ - try to get any available component
+                            def availableComponents = components.names
+                            if (availableComponents.size() > 0) {
+                                from components[availableComponents.first()]
+                            } else {
+                                // If no components available, skip this publication
+                                logger.warn("No software components found for publication")
+                            }
+                        }
+                    } else if (project.plugins.hasPlugin('java')) {
+                        from components["java"]
+                    }
+                    groupId = GROUPID
+                    artifactId = POM_ARTIFACT_ID
+                    version = VERSION_NAME
+                    artifact sourceJar
+                }
+            }
+        }
+//        repositories {
+//            maven {
+//                if (isReleaseBuild()) {
+//                    url = mvn_android_release_url
+//                } else {
+//                    url = mvn_android_snapshot_url
+//                }
+//                allowInsecureProtocol = true
+//                credentials {
+//                    username = "android"
+//                    password = "android"
+//                }
+//            }
+//        }
+    }
+/*
+    task printMappings << {
+        conf2ScopeMappings.mappings.each { k, v ->
+            println "configuration: ${k}"
+            println "mapping: \n\tpriority: ${v.priority}\n\tscope: ${v.scope}"
+            println "========================================"
+        }
+    }*/
+}

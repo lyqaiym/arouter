@@ -1,0 +1,52 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace "com.alibaba.android.arouter.demo.module1"
+}
+
+dependencies {
+    implementation project(':arouter-annotation')
+    implementation project(':arouter-api')
+    annotationProcessor project(':arouter-compiler')
+//    annotationProcessor 'com.alibaba:arouter-compiler:1.5.2'
+    implementation project(':module-java-export')
+
+    implementation "androidx.core:core:1.3.1@aar"
+    implementation "androidx.appcompat:appcompat:1.2.0"
+    implementation 'com.alibaba:fastjson:1.2.48'
+    implementation "androidx.fragment:fragment:1.1.0@aar"
+    implementation "androidx.lifecycle:lifecycle-common:2.4.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.4.0"
+    implementation "androidx.lifecycle:lifecycle-livedata:2.4.0"
+    implementation "androidx.savedstate:savedstate:1.2.0"
+}
+android {
+    compileSdkVersion Integer.parseInt(COMPILE_SDK_VERSION)
+//    buildToolsVersion BUILDTOOLS_VERSION
+
+    defaultConfig {
+        minSdkVersion Integer.parseInt(MIN_SDK_VERSION)
+        targetSdkVersion Integer.parseInt(TARGET_SDK_VERSION)
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [AROUTER_MODULE_NAME: project.getName(), AROUTER_GENERATE_DOC: "enable"]
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildTypes {
+        release {
+            debuggable false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions { abortOnError false }
+}

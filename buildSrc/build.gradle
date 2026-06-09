@@ -1,0 +1,77 @@
+apply plugin: 'groovy'
+apply plugin: "kotlin"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+buildscript {
+    ext.kotlin_version = '1.9.25'
+    ext.arouter_register_version = '1.0.2'
+    ext{
+        compile_sdk_version = 31
+        build_tool_version = '30.0.3'
+//        kotlin_version = '1.6.21'
+        kotlin_version = '1.9.25'
+//        kotlin_version = '1.9.22'
+        ksp_version = "1.0.17"
+//        agp_version = '7.4.2'
+        agp_version = '8.7.2'
+        exoplayer_version = '2.17.1'
+        media3_version = "1.0.0"
+        splitties_version = '3.0.0'
+        room_version = '2.4.0'
+
+//        buildToolsVersion = "30.0.3"
+        minSdkVersion = 23
+        compileSdkVersion = 31
+        targetSdkVersion = 30
+        ndkVersion = "21.1.6352462"
+        kotlinVersion = "1.9.25"
+    }
+    repositories {
+//        maven {
+//            allowInsecureProtocol = true
+//            url mvn_repo_path2
+//        }
+        mavenCentral()
+        google()
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:$agp_version")
+//        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+//        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+//        classpath "com.alibaba:arouter-register:$arouter_register_version"
+    }
+}
+
+allprojects {
+    repositories {
+//        maven {
+//            allowInsecureProtocol = true
+//            url mvn_repo_path2
+//        }
+        mavenLocal()
+        mavenCentral()
+        google()
+    }
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+}
+
+dependencies {
+//    compile 'com.android.tools.build:gradle:2.1.3'
+    implementation "com.android.tools.build:gradle:$agp_version"
+    implementation 'org.javassist:javassist:3.28.0-GA'
+    implementation 'commons-codec:commons-codec:1.11'
+    implementation 'commons-io:commons-io:2.4'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
+}
+
+//apply from: rootProject.file('gradle/publish_old.gradle')

@@ -1,0 +1,25 @@
+apply plugin: 'java'
+
+//:arouter-compiler:main: Could not resolve project :arouter-annotation.
+//Required by: project :arouter-compiler
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    implementation project(':arouter-annotation')
+//    implementation 'com.alibaba:arouter-annotation:1.0.6'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc7'
+    compileOnly 'com.google.auto.service:auto-service-annotations:1.0-rc7'
+
+    implementation 'com.squareup:javapoet:1.8.0'
+
+    implementation 'org.apache.commons:commons-lang3:3.5'
+    implementation 'org.apache.commons:commons-collections4:4.1'
+
+    implementation 'com.alibaba:fastjson:1.2.69'
+    implementation "androidx.fragment:fragment:1.1.0@aar"
+}
+
+apply from: rootProject.file('gradle/publish_old.gradle')
