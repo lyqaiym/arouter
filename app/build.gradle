@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.alibaba.arouter'
+//apply plugin: 'com.alibaba.arouter'
 
 android {
     ndkVersion '24.0.8215888'

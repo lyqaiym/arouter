@@ -105,8 +105,7 @@ abstract class GenerateRoutesJsonTask : DefaultTask() {
 
     private fun writeJson(collected: Map<String, MutableList<String>>, outDir: File) {
         outDir.mkdirs()
-        outDir.listFiles()?.filter { it.isFile && it.name.endsWith(".json") }
-            ?.forEach { it.delete() }
+        outDir.listFiles()?.filter { it.isFile && it.name.endsWith(".json") }?.forEach { it.delete() }
         val items = collected.filter { it.value.isNotEmpty() }
         val json = StringBuilder().apply {
             append("[\n")
