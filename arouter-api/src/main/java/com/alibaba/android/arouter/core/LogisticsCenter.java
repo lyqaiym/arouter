@@ -80,16 +80,19 @@ public class LogisticsCenter {
      * the problem that the main dex file size is too large
      */
     private static void register(String className) {
-        Log.d(TAG, "register:className=" + className);
+//        Log.d(TAG, "register:className=" + className);
         if (!TextUtils.isEmpty(className)) {
             try {
                 Class<?> clazz = Class.forName(className);
                 Object obj = clazz.getConstructor().newInstance();
                 if (obj instanceof IRouteRoot) {
+                    Log.d(TAG, "registerRouteRoot:className=" + className);
                     registerRouteRoot((IRouteRoot) obj);
                 } else if (obj instanceof IProviderGroup) {
+                    Log.d(TAG, "registerProvider:className=" + className);
                     registerProvider((IProviderGroup) obj);
                 } else if (obj instanceof IInterceptorGroup) {
+                    Log.d(TAG, "IInterceptorGroup:className=" + className);
                     registerInterceptor((IInterceptorGroup) obj);
                 } else {
                     logger.info(TAG, "register failed, class name: " + className

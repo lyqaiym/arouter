@@ -43,6 +43,8 @@ abstract class RegisterTransform @Inject constructor(
 
     init {
         System.err.println("RegisterTransform:init:list=" + registerList.size)
+        pool.makeClass("com.alibaba.android.arouter.facade.template.IRouteGroup")
+        pool.makeClass("com.alibaba.android.arouter.facade.template.ISyringe")
         registerList.forEach { ext ->
             if (ext.interfaceName.isNotEmpty()) {
                 val classname = ext.interfaceName.replace("/", ".")

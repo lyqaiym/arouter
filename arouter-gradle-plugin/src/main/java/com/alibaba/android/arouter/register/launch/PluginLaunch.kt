@@ -22,6 +22,7 @@ public class PluginLaunch : Plugin<Project> {
     override fun apply(project: Project) {
 //        def isApp = project.plugins.hasPlugin(AppPlugin)
         var isApp = project.plugins.hasPlugin(AppPlugin::class.java)
+        val start = System.currentTimeMillis()
         System.out.println("arouter-register:project=${project.name},isApp=${isApp}")
         //only application module needs this plugin to generate register code
         SystemUtil.confirm(project)
@@ -36,8 +37,8 @@ public class PluginLaunch : Plugin<Project> {
         list.add(ScanSetting("IRouteRoot"))
         list.add(ScanSetting("IInterceptorGroup"))
         list.add(ScanSetting("IProviderGroup"))
-        list.add(ScanSetting("IRouteGroup"))
-        list.add(ScanSetting("ISyringe"))
+//        list.add(ScanSetting("IRouteGroup"))
+//        list.add(ScanSetting("ISyringe"))
         RegisterTransform.registerList = list
         var androidComponents =
             project.extensions.getByType(AndroidComponentsExtension::class.java)
@@ -67,6 +68,8 @@ public class PluginLaunch : Plugin<Project> {
                 variant.sources.assets?.addGeneratedSourceDirectory(generateTask) { it.outputDir }
             }
         }
+        val time = System.currentTimeMillis() - start
+        System.out.println("arouter-register:project=${project.name},time=${time}")
     }
 
 }
