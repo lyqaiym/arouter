@@ -126,7 +126,7 @@ abstract class RegisterTransform @Inject constructor(
                         jarFile.getInputStream(jarEntry).use {
                             it.copyTo(jarOutput)
                         }
-                        System.out.println("RegisterTransform:packOutputJar:input=" + input)
+//                        System.out.println("RegisterTransform:packOutputJar:input=" + input)
                         if (ScanUtil.shouldProcessPreDexJar(input.path)) {
                             ScanUtil.scanJar(pool, input)
                         }
@@ -142,27 +142,71 @@ abstract class RegisterTransform @Inject constructor(
                     file.inputStream().use { inputStream ->
                         inputStream.copyTo(jarOutput)
                     }
-                    if (file.isFile() && ScanUtil.shouldProcessClass(path)) {
+                    if (file.isFile() && (ScanUtil.shouldProcessClass(file.path) || file.name.contains("ARouter$$"))) {
+                        System.out.println("RegisterTransform:packOutputJar:file1=" + file.name)
                         ScanUtil.scanClass(pool, file)
+                    } else {
+//                        System.out.println("RegisterTransform:packOutputJar:file2=" + file.name)
                     }
                     jarOutput.closeEntry()
                 }
             }
         }
         jarOutput.close()
+        System.out.println("RegisterTransform:packOutputJar:fileContainsInitClass=" + fileContainsInitClass)
         if (fileContainsInitClass != null) {
             fileContainsInitClass = outputFile // 👈 就加这一行！！！
             registerList.forEach { ext ->
                 if (ext.interfaceName.isNotEmpty()) {
                     val classname = ext.interfaceName.replace("/", ".")
-                    System.err.println("packOutputJar:interfaceName=${classname},size=${ext.classList.size}")
+                    System.err.println("packOutputJar:interfaceName1=${classname},size=${ext.classList.size}")
                     for (classNameFind in ext.classList) {
-                        System.err.println("packOutputJar:classNameF=${classNameFind}")
+                        System.err.println("packOutputJar:classNameF1=${classNameFind}")
                     }
                     RegisterCodeGenerator.insertInitCodeTo(ext)
                 }
             }
+        } else {
+            registerList.forEach { ext ->
+                if (ext.interfaceName.isNotEmpty()) {
+                    val classname = ext.interfaceName.replace("/", ".")
+                    System.err.println("packOutputJar:interfaceName2=${classname},size=${ext.classList.size}")
+                    for (classNameFind in ext.classList) {
+                        System.err.println("packOutputJar:classNameF2=${classNameFind}")
+                    }
+                }
+            }
+            writeClassListToAssets()
         }
+    }
+
+    private fun writeClassListToAssets() {
+        val items = registerList.filter { it.interfaceName.isNotBlank() && it.classList.isNotEmpty() }
+        val json = StringBuilder().apply {
+            append("[\n")
+            items.forEachIndexed { index, ext ->
+                val interfaceName = ext.interfaceName.replace("/", ".")
+                append("  {\n")
+                append("    \"interfaceName\": \"$interfaceName\",\n")
+                append("    \"classes\": [")
+                ext.classList.forEachIndexed { i, className ->
+                    val realName = className.replace("/", ".")
+                    append(if (i == 0) "\n" else ",\n")
+                    append("      \"$realName\"")
+                }
+                append("\n    ]")
+                append("\n  }")
+                if (index != items.size - 1) append(",")
+                append("\n")
+            }
+            append("]\n")
+        }.toString()
+
+        val assetsDir = File(SystemUtil.project.projectDir, "src/main/assets")
+        assetsDir.mkdirs()
+        val dest = File(assetsDir, "arouter_routes.json")
+        dest.writeText(json)
+        System.err.println("writeClassListToAssets: wrote ${items.size} interfaces -> ${dest.absolutePath}")
     }
 
 //    private fun packOutputJar2() {

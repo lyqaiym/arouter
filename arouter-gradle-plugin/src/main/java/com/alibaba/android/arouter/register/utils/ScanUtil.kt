@@ -24,7 +24,7 @@ object ScanUtil {
      */
     fun scanJar(pool: ClassPool, jarFile: File) {
         if (jarFile.exists()) {
-            System.err.println("scanJar:jarFile=$jarFile")
+//            System.err.println("scanJar:jarFile=$jarFile")
             JarFile(jarFile).use { file ->
                 val enumeration = file.entries()
                 while (enumeration.hasMoreElements()) {

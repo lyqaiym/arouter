@@ -21,40 +21,37 @@ public class PluginLaunch : Plugin<Project> {
     override fun apply(project: Project) {
 //        def isApp = project.plugins.hasPlugin(AppPlugin)
         var isApp = project.plugins.hasPlugin(AppPlugin::class.java)
+        System.out.println("arouter-register:project=${project.name},isApp=${isApp}")
         //only application module needs this plugin to generate register code
-        if (isApp) {
-            SystemUtil.confirm(project)
-            Logger.make(project)
+        SystemUtil.confirm(project)
+        Logger.make(project)
 
-            System.out.println("Project enable arouter-register plugin")
+        System.out.println("Project enable arouter-register plugin")
 
-//            def android = project.extensions.getByType(AppExtension)
-//            var android = project.extensions.getByType(AppExtension::class.java)
-            //init arouter-auto-register settings
-           var list : ArrayList<ScanSetting> = ArrayList()
-            list.add(ScanSetting("IRouteRoot"))
-            list.add(ScanSetting("IInterceptorGroup"))
-            list.add(ScanSetting("IProviderGroup"))
-            list.add(ScanSetting("IRouteGroup"))
-            RegisterTransform.registerList = list
-            var androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
-            androidComponents.onVariants { variant ->
-                System.out.println("arouter-register execute:name1=" + variant.name)
-                val taskProvider = project.tasks.register(
-                    "${variant.name}ARouterTask", RegisterTransform::class.java, androidComponents)
-                System.out.println("arouter-register execute:name2=" + variant.name)
-                variant.artifacts.forScope(ScopedArtifacts.Scope.ALL).use(taskProvider)
-                    .toTransform(
-                        ScopedArtifact.CLASSES,
-                        RegisterTransform::allJars,
-                        RegisterTransform::allDirectories,
-                        RegisterTransform::output)
-            }
-//            def transformImpl = new RegisterTransform(project)
-//            //register this plugin
-//            android.registerTransform(transformImpl)
-        } else {
-            System.out.println("arouter-register isnot isApp")
+//      def android = project.extensions.getByType(AppExtension)
+//      var android = project.extensions.getByType(AppExtension::class.java)
+        //init arouter-auto-register settings
+        var list: ArrayList<ScanSetting> = ArrayList()
+        list.add(ScanSetting("IRouteRoot"))
+        list.add(ScanSetting("IInterceptorGroup"))
+        list.add(ScanSetting("IProviderGroup"))
+        list.add(ScanSetting("IRouteGroup"))
+        list.add(ScanSetting("ISyringe"))
+        RegisterTransform.registerList = list
+        var androidComponents =
+            project.extensions.getByType(AndroidComponentsExtension::class.java)
+        androidComponents.onVariants { variant ->
+            System.out.println("arouter-register execute:name1=" + variant.name)
+            val taskProvider = project.tasks.register(
+                "${variant.name}ARouterTask", RegisterTransform::class.java, androidComponents
+            )
+            System.out.println("arouter-register execute:name2=" + variant.name)
+            variant.artifacts.forScope(ScopedArtifacts.Scope.ALL).use(taskProvider).toTransform(
+                ScopedArtifact.CLASSES,
+                RegisterTransform::allJars,
+                RegisterTransform::allDirectories,
+                RegisterTransform::output
+            )
         }
     }
 

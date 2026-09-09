@@ -14,9 +14,9 @@ object SystemUtil {
     var isWindow = false
 
     fun confirm(project: Project) {
-        if (!project.plugins.hasPlugin(AppPlugin::class.java)) {
-            throw RuntimeException("DRouterPlugin: please apply \'com.android.application\' first")
-        }
+//        if (!project.plugins.hasPlugin(AppPlugin::class.java)) {
+//            throw RuntimeException("DRouterPlugin: please apply \'com.android.application\' first")
+//        }
 
         SystemUtil.project = project
         cacheDir = File(project.buildDir, "intermediates/arouter")
