@@ -4,6 +4,7 @@ import com.alibaba.android.arouter.register.utils.Logger
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.gradle.AppPlugin
 import com.alibaba.android.arouter.register.utils.ScanSetting
+import com.alibaba.android.arouter.register.core.GenerateRoutesJsonTask
 import com.alibaba.android.arouter.register.core.RegisterTransform
 import com.alibaba.android.arouter.register.core.SystemUtil
 import com.android.build.api.artifact.ScopedArtifact
@@ -46,12 +47,25 @@ public class PluginLaunch : Plugin<Project> {
                 "${variant.name}ARouterTask", RegisterTransform::class.java, androidComponents
             )
             System.out.println("arouter-register execute:name2=" + variant.name)
-            variant.artifacts.forScope(ScopedArtifacts.Scope.ALL).use(taskProvider).toTransform(
-                ScopedArtifact.CLASSES,
-                RegisterTransform::allJars,
-                RegisterTransform::allDirectories,
-                RegisterTransform::output
-            )
+            val scoped = variant.artifacts.forScope(ScopedArtifacts.Scope.ALL)
+            if (isApp) {
+                scoped.use(taskProvider).toTransform(
+                    ScopedArtifact.CLASSES,
+                    RegisterTransform::allJars,
+                    RegisterTransform::allDirectories,
+                    RegisterTransform::output
+                )
+            } else {
+                val generateTask = project.tasks.register(
+                    "${variant.name}GenerateRoutesJsonTask", GenerateRoutesJsonTask::class.java
+                )
+                scoped.use(generateTask).toGet(
+                    ScopedArtifact.CLASSES,
+                    GenerateRoutesJsonTask::allJars,
+                    GenerateRoutesJsonTask::allDirectories
+                )
+                variant.sources.assets?.addGeneratedSourceDirectory(generateTask) { it.outputDir }
+            }
         }
     }
 

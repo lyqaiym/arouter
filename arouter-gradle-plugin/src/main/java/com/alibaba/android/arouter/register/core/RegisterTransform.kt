@@ -176,37 +176,7 @@ abstract class RegisterTransform @Inject constructor(
                     }
                 }
             }
-            writeClassListToAssets()
         }
-    }
-
-    private fun writeClassListToAssets() {
-        val items = registerList.filter { it.interfaceName.isNotBlank() && it.classList.isNotEmpty() }
-        val json = StringBuilder().apply {
-            append("[\n")
-            items.forEachIndexed { index, ext ->
-                val interfaceName = ext.interfaceName.replace("/", ".")
-                append("  {\n")
-                append("    \"interfaceName\": \"$interfaceName\",\n")
-                append("    \"classes\": [")
-                ext.classList.forEachIndexed { i, className ->
-                    val realName = className.replace("/", ".")
-                    append(if (i == 0) "\n" else ",\n")
-                    append("      \"$realName\"")
-                }
-                append("\n    ]")
-                append("\n  }")
-                if (index != items.size - 1) append(",")
-                append("\n")
-            }
-            append("]\n")
-        }.toString()
-
-        val assetsDir = File(SystemUtil.project.projectDir, "src/main/assets")
-        assetsDir.mkdirs()
-        val dest = File(assetsDir, "arouter_routes.json")
-        dest.writeText(json)
-        System.err.println("writeClassListToAssets: wrote ${items.size} interfaces -> ${dest.absolutePath}")
     }
 
 //    private fun packOutputJar2() {
