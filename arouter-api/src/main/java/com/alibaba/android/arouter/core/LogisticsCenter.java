@@ -178,7 +178,7 @@ public class LogisticsCenter {
     private static boolean parseRoutesJson(String fileName) {
         InputStream input = null;
         try {
-            input = mContext.getAssets().open(fileName);
+            input = mContext.getAssets().open("aroute_reg/" + fileName);
             JSONArray array = new JSONArray(readStream(input));
             boolean registered = false;
             for (int i = 0; i < array.length(); i++) {
